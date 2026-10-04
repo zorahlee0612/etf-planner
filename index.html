@@ -3,21 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>📈 ETF 存股規劃器</title>
+  <title>台美股全方位 ETF 存股規劃器</title>
   
-  <!-- PWA App 化設定：獨立視窗、全螢幕、主題顏色 -->
+  <!-- PWA 安裝關鍵設定 -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="ETF 存股王">
   <meta name="theme-color" content="#1e3a8a">
   
-  <!-- App 桌面上顯示的應用程式圖示 (Emoji 視覺圖示) -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
 
-  <!-- PWA 動態 Manifest 宣告檔（讓 Android/iOS 識別為可安裝的獨立 App） -->
-  <link rel="manifest" href="data:application/manifest+json;utf8,%7B%22name%22%3A%22ETF%20%E5%AD%98%E8%82%A1%E8%A6%8F%E5%8A%83%E5%99%A8%22%2C%22short_name%22%3A%22ETF%E5%AD%98%E8%82%A1%E7%8E%8B%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f1f5f9%22%2C%22theme_color%22%3A%22%231e3a8a%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%93%88%3C%2Ftext%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="data:application/manifest+json;utf8,%7B%22name%22%3A%22ETF%20%E5%AD%98%E8%82%A1%E8%A6%8F%E5%8A%83%E5%99%A8%22%2C%22short_name%22%3A%22ETF%E5%AD%98%E8%82%A1%E7%8E%8B%22%2C%22start_url%22%3A%22index.html%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f1f5f9%22%2C%22theme_color%22%3A%22%231e3a8a%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%93%88%3C%2Ftext%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%2C%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%93%88%3C%2Ftext%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
 
   <!-- 導入 Google Fonts (思源黑體) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,7 +32,7 @@
       margin: 0; 
       padding: 24px 12px; 
       -webkit-font-smoothing: antialiased;
-      user-select: none; /* 提升類 App 觸控體驗 */
+      user-select: none;
     }
     .container { 
       max-width: 980px; 
@@ -154,12 +153,30 @@
     .info-card h4 { margin: 0 0 8px 0; font-size: 1.1rem; color: #0f172a; display: flex; justify-content: space-between; }
     .info-card p { font-size: 0.9rem; color: #475569; margin: 4px 0; line-height: 1.5; }
     .info-highlight { font-weight: bold; color: #2563eb; }
+
+    /* 手動安裝 App 按鈕 (僅在支援時顯示) */
+    .install-bar {
+      display: none;
+      background: #1e3a8a;
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      align-items: center;
+      justify-content: space-between;
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>📈 ETF 存股規劃器</h1>
+  <!-- 手動安裝提示條 -->
+  <div id="installBar" class="install-bar">
+    <span style="font-size:0.95rem; font-weight:bold;">📲 安裝「ETF存股王」App 到手機桌面</span>
+    <button class="btn" style="background:#f59e0b;" onclick="promptInstall()">立即安裝</button>
+  </div>
+
+  <h1>📈 台美股全方位 ETF 存股規劃器</h1>
 
   <!-- 頁籤導航 -->
   <div class="tab-nav">
@@ -169,7 +186,6 @@
 
   <!-- 分頁一：試算區 -->
   <div id="tab-calculator" class="tab-content active">
-    <!-- 1. 定期定額基本設定 -->
     <div class="card">
       <h3>1. 設定定期定額條件與預算</h3>
       <div style="display: flex; gap: 16px; flex-wrap: wrap;">
@@ -192,7 +208,6 @@
       </div>
     </div>
 
-    <!-- 2. ETF 配置區 -->
     <div class="card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <h3 style="margin: 0;">2. 挑選台/美股標的與調控比例 (%)</h3>
@@ -206,18 +221,16 @@
       </div>
 
       <div id="etfCardsContainer">
-        <!-- 動態產生標的卡片 -->
+        <!-- 動態標的卡片 -->
       </div>
 
       <button class="btn" style="background:#10b981;" onclick="addEtfRow()">+ 新增標的卡片</button>
     </div>
 
-    <!-- 3. 幣別分離計算結果 -->
     <div class="card">
       <h3>3. 台美股幣別分離結算與折合總額 (預估 <span id="showYears1">15</span> 年後)</h3>
       
       <div class="currency-summary-grid">
-        <!-- 台股結算 (TWD) -->
         <div class="currency-box currency-box-tw">
           <div class="currency-title" style="color:#1e40af;">
             <span>🇹🇼 台股部分 (NT$)</span>
@@ -229,7 +242,6 @@
           <div class="currency-item"><span>預估年領股息：</span><span class="currency-val" id="twDividend" style="color:#059669;">NT$ 0</span></div>
         </div>
 
-        <!-- 美股結算 (USD) -->
         <div class="currency-box currency-box-us">
           <div class="currency-title" style="color:#92400e;">
             <span>🇺🇸 美股部分 (US$)</span>
@@ -241,7 +253,6 @@
           <div class="currency-item"><span>預估年領股息：</span><span class="currency-val" id="usDividend" style="color:#059669;">US$ 0</span></div>
         </div>
 
-        <!-- 全組合折合台幣總結算 -->
         <div class="currency-box currency-box-total">
           <div class="currency-title" style="color:#065f46;">
             <span>🌐 全組合折合台幣 (NT$)</span>
@@ -272,7 +283,6 @@
     </div>
   </div>
 
-  <!-- 分頁二：百科全書區 -->
   <div id="tab-wiki" class="tab-content">
     <div class="card">
       <h3>📖 完整台美股 ETF 標的百科目錄</h3>
@@ -285,7 +295,38 @@
 </div>
 
 <script>
-  // 完整標的資料庫
+  // PWA Service Worker 動態註冊（啟用 Android 安裝支援）
+  if ('serviceWorker' in navigator) {
+    const swCode = `
+      self.addEventListener('install', e => self.skipWaiting());
+      self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+      self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => new Response('Offline'))));
+    `;
+    const blob = new Blob([swCode], { type: 'text/javascript' });
+    const swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl).catch(err => console.log('SW reg error:', err));
+  }
+
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('installBar').style.display = 'flex';
+  });
+
+  function promptInstall() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choice) => {
+        if (choice.outcome === 'accepted') {
+          document.getElementById('installBar').style.display = 'none';
+        }
+        deferredPrompt = null;
+      });
+    }
+  }
+
+  // 資料庫
   const db = {
     "0050":   { name: "0050 元大台灣50", symbol: "0050.TW", region: "台股", isDiv: true, freq: "半年配", price: 190.0, expReturn: 8.5, divYield: 3.2, desc: "追蹤台股市值前 50 大企業（含台積電 50%+）。", topHoldings: "台積電、聯發科、鴻海" },
     "0052":   { name: "0052 富邦科技", symbol: "0052.TW", region: "台股", isDiv: true, freq: "年配", price: 185.0, expReturn: 10.5, divYield: 2.8, desc: "含積量極高（台積電約 60%）。", topHoldings: "台積電、聯發科、廣達" },
@@ -575,7 +616,6 @@
       tbody.appendChild(tr);
     });
 
-    // 更新 UI
     document.getElementById('twMonthly').innerText = 'NT$ ' + Math.round(monthlyTotalTW).toLocaleString();
     document.getElementById('twPrincipal').innerText = 'NT$ ' + Math.round(twPrincipal).toLocaleString();
     document.getElementById('twAsset').innerText = 'NT$ ' + Math.round(twAsset).toLocaleString();
@@ -595,7 +635,6 @@
     document.getElementById('totalDividendTwd').innerText = 'NT$ ' + Math.round(totalDivTwd).toLocaleString();
   }
 
-  // 初始載入
   loadPreset('tw_us_global');
 </script>
 
