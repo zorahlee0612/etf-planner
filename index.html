@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📈 ETF 存股規劃器</title>
+  
+  <!-- 導入 Google Fonts (思源黑體) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; }
+    body { 
+      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Microsoft JhengHei", sans-serif; 
+      background: #f1f5f9; 
+      color: #1e293b; 
+      margin: 0; 
+      padding: 24px 12px; 
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { 
+      max-width: 980px; 
+      margin: 0 auto; 
+      background: #ffffff; 
+      padding: 28px; 
+      border-radius: 16px; 
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); 
+    }
+    h1 { 
+      text-align: center; 
+      color: #0f172a; 
+      font-weight: 900; 
+      font-size: 1.8rem; 
+      margin-bottom: 20px; 
+    }
+    
+    .tab-nav {
+      display: flex;
+      gap: 8px;
+      border-bottom: 2px solid #e2e8f0;
+      margin-bottom: 24px;
+    }
+    .tab-btn {
+      padding: 12px 20px;
+      font-size: 1rem;
+      font-weight: 700;
+      background: transparent;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      color: #2563eb;
+      border-bottom-color: #2563eb;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .card { 
+      background: #f8fafc; 
+      border: 1px solid #e2e8f0; 
+      border-radius: 12px; 
+      padding: 20px; 
+      margin-bottom: 24px; 
+    }
+    .card h3 {
+      margin-top: 0;
+      font-size: 1.1rem;
+      color: #1e3a8a;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .form-group { margin-bottom: 12px; display: flex; flex-direction: column; }
+    label { font-weight: 700; margin-bottom: 6px; font-size: 0.9rem; color: #475569; }
+    input, select { 
+      padding: 10px 12px; 
+      border: 1px solid #cbd5e1; 
+      border-radius: 8px; 
+      font-size: 15px; 
+      font-family: inherit;
+      background-color: #ffffff;
+      width: 100%;
+    }
+    input[type="range"] { padding: 0; height: 8px; cursor: pointer; }
+    input:focus, select:focus { outline: none; border-color: #2563eb; }
+    .btn { 
+      background: #2563eb; 
+      color: #ffffff; 
+      border: none; 
+      padding: 10px 16px; 
+      font-size: 14px; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      font-weight: 700; 
+      font-family: inherit;
+    }
+    .btn-secondary { background: #64748b; margin-right: 6px; margin-bottom: 8px; }
+    .btn-danger { background: #ef4444; color: white; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
+    .btn-api { background: #059669; }
+    
+    .etf-card-item {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .etf-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .etf-card-title { font-weight: 700; color: #1e3a8a; font-size: 1rem; }
+    .ratio-control-box { display: flex; gap: 12px; align-items: center; }
+
+    .table-res { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    .table-res th, .table-res td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; font-size: 0.9rem; }
+    .table-res th { background: #eff6ff; color: #1e40af; font-weight: 700; }
+    .tag-no-div { background: #dcfce7; color: #166534; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; }
+    .tag-div { background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; }
+    .tag-us { background: #fef3c7; color: #92400e; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; }
+    
+    /* 幣別分開卡片 */
+    .currency-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
+    .currency-box { background: #ffffff; padding: 18px; border-radius: 12px; border: 1px solid #cbd5e1; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+    .currency-box-tw { border-top: 4px solid #2563eb; }
+    .currency-box-us { border-top: 4px solid #d97706; }
+    .currency-box-total { border-top: 4px solid #059669; background: #f0fdf4; }
+    .currency-title { font-size: 1.1rem; font-weight: 900; margin-bottom: 10px; display: flex; justify-content: space-between; }
+    .currency-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; font-size: 0.92rem; }
+    .currency-item:last-child { border-bottom: none; }
+    .currency-val { font-weight: bold; color: #1e293b; }
+
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .info-card { background: #fff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 18px; }
+    .info-card h4 { margin: 0 0 8px 0; font-size: 1.1rem; color: #0f172a; display: flex; justify-content: space-between; }
+    .info-card p { font-size: 0.9rem; color: #475569; margin: 4px 0; line-height: 1.5; }
+    .info-highlight { font-weight: bold; color: #2563eb; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>📈 ETF 存股規劃器</h1>
+
+  <!-- 頁籤導航 -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('calculator')">📊 存股試算規劃 (幣別分離)</button>
+    <button class="tab-btn" onclick="switchTab('wiki')">📖 ETF 深度百科全書</button>
+  </div>
+
+  <!-- 分頁一：試算區 -->
+  <div id="tab-calculator" class="tab-content active">
+    <!-- 1. 定期定額基本設定 -->
+    <div class="card">
+      <h3>1. 設定定期定額條件與預算</h3>
+      <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+        <div class="form-group" style="flex: 1; min-width: 200px;">
+          <label>每月台股扣款預算 (NT$ 台幣)：</label>
+          <input type="number" id="monthlyTotalTW" value="15000" step="1000" oninput="calculate()">
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 200px;">
+          <label>每月美股扣款預算 (US$ 美金)：</label>
+          <input type="number" id="monthlyTotalUS" value="300" step="50" oninput="calculate()">
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+          <label>美金匯率預估 (NT$/US$)：</label>
+          <input type="number" id="usExchangeRate" value="32.0" step="0.1" oninput="calculate()">
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+          <label>預計投資年數 (年)：</label>
+          <input type="number" id="years" value="15" step="1" oninput="calculate()">
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. ETF 配置區 -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="margin: 0;">2. 挑選台/美股標的與調控比例 (%)</h3>
+        <button class="btn btn-api" onclick="fetchAllPrices()">🔄 一鍵更新台/美股最新價</button>
+      </div>
+      
+      <div style="margin-bottom: 16px;">
+        <button class="btn btn-secondary" onclick="loadPreset('tw_us_global')">🌐 全球大盤雙核 (0050台股 + VOO美股)</button>
+        <button class="btn btn-secondary" onclick="loadPreset('tech_power')">💻 科技龍頭強擊 (QQQ + SOXX + 0052)</button>
+        <button class="btn btn-secondary" onclick="loadPreset('leverage_div')">🔥 槓桿+高股息 (00631L正2 + 00878)</button>
+      </div>
+
+      <div id="etfCardsContainer">
+        <!-- 動態產生標的卡片 -->
+      </div>
+
+      <button class="btn" style="background:#10b981;" onclick="addEtfRow()">+ 新增標的卡片</button>
+    </div>
+
+    <!-- 3. 幣別分離計算結果 -->
+    <div class="card">
+      <h3>3. 台美股幣別分離結算與折合總額 (預估 <span id="showYears1">15</span> 年後)</h3>
+      
+      <div class="currency-summary-grid">
+        <!-- 台股結算 (TWD) -->
+        <div class="currency-box currency-box-tw">
+          <div class="currency-title" style="color:#1e40af;">
+            <span>🇹🇼 台股部分 (NT$)</span>
+            <span>台幣</span>
+          </div>
+          <div class="currency-item"><span>每月扣款總額：</span><span class="currency-val" id="twMonthly">NT$ 0</span></div>
+          <div class="currency-item"><span>累積總投入本金：</span><span class="currency-val" id="twPrincipal">NT$ 0</span></div>
+          <div class="currency-item"><span>預估資產總額：</span><span class="currency-val" id="twAsset" style="color:#d97706;">NT$ 0</span></div>
+          <div class="currency-item"><span>預估年領股息：</span><span class="currency-val" id="twDividend" style="color:#059669;">NT$ 0</span></div>
+        </div>
+
+        <!-- 美股結算 (USD) -->
+        <div class="currency-box currency-box-us">
+          <div class="currency-title" style="color:#92400e;">
+            <span>🇺🇸 美股部分 (US$)</span>
+            <span>美金</span>
+          </div>
+          <div class="currency-item"><span>每月扣款總額：</span><span class="currency-val" id="usMonthly">US$ 0</span></div>
+          <div class="currency-item"><span>累積總投入本金：</span><span class="currency-val" id="usPrincipal">US$ 0</span></div>
+          <div class="currency-item"><span>預估資產總額：</span><span class="currency-val" id="usAsset" style="color:#d97706;">US$ 0</span></div>
+          <div class="currency-item"><span>預估年領股息：</span><span class="currency-val" id="usDividend" style="color:#059669;">US$ 0</span></div>
+        </div>
+
+        <!-- 全組合折合台幣總結算 -->
+        <div class="currency-box currency-box-total">
+          <div class="currency-title" style="color:#065f46;">
+            <span>🌐 全組合折合台幣 (NT$)</span>
+            <span>合算</span>
+          </div>
+          <div class="currency-item"><span>美金匯率基準：</span><span class="currency-val" id="showExchangeRate">1 : 32.0</span></div>
+          <div class="currency-item"><span>每月折合扣款：</span><span class="currency-val" id="totalMonthlyTwd">NT$ 0</span></div>
+          <div class="currency-item"><span>預估折合總資產：</span><span class="currency-val" id="totalAssetTwd" style="color:#d97706; font-size:1.1em;">NT$ 0</span></div>
+          <div class="currency-item"><span>預估折合年領股息：</span><span class="currency-val" id="totalDividendTwd" style="color:#059669;">NT$ 0</span></div>
+        </div>
+      </div>
+
+      <table class="table-res">
+        <thead>
+          <tr>
+            <th>ETF 標的</th>
+            <th>區域 / 幣別</th>
+            <th>分配 %</th>
+            <th>每月分配扣款</th>
+            <th>預估年化報酬</th>
+            <th>即時股價</th>
+            <th>每月可買數量</th>
+          </tr>
+        </thead>
+        <tbody id="resultBody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 分頁二：百科全書區 -->
+  <div id="tab-wiki" class="tab-content">
+    <div class="card">
+      <h3>📖 完整台美股 ETF 標的百科目錄</h3>
+      <div class="info-grid" id="wikiCardsContainer">
+        <!-- 動態產生百科卡片 -->
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // 完整標的資料庫
+  const db = {
+    // === 台股標的 (TWD) ===
+    "0050":   { name: "0050 元大台灣50", symbol: "0050.TW", region: "台股", isDiv: true, freq: "半年配", price: 190.0, expReturn: 8.5, divYield: 3.2, desc: "追蹤台股市值前 50 大企業（含台積電 50%+）。", topHoldings: "台積電、聯發科、鴻海" },
+    "0052":   { name: "0052 富邦科技", symbol: "0052.TW", region: "台股", isDiv: true, freq: "年配", price: 185.0, expReturn: 10.5, divYield: 2.8, desc: "含積量極高（台積電約 60%）。", topHoldings: "台積電、聯發科、廣達" },
+    "0056":   { name: "0056 元大高股息", symbol: "0056.TW", region: "台股", isDiv: true, freq: "季配", price: 37.2, expReturn: 6.8, divYield: 7.2, desc: "預測未來一年殖利率最高的 50 檔股票。", topHoldings: "長榮、緯創、廣達" },
+    "006208": { name: "006208 富邦台50", symbol: "006208.TW", region: "台股", isDiv: true, freq: "半年配", price: 110.0, expReturn: 8.5, divYield: 3.2, desc: "0050 平替版，內扣管理費更低。", topHoldings: "台積電、聯發科、鴻海" },
+    "00631L": { name: "00631L 元大台灣50正2", symbol: "00631L.TW", region: "台股槓桿", isDiv: false, freq: "不配息", price: 210.0, expReturn: 20.0, divYield: 0, desc: "台股大盤 2 倍槓桿 ETF，不配息自動滾入複利。", topHoldings: "台指期貨合約" },
+    "00713":  { name: "00713 元大台灣高息低波", symbol: "00713.TW", region: "台股", isDiv: true, freq: "季配", price: 57.5, expReturn: 7.5, divYield: 6.5, desc: "兼具高股息與低波動，極度抗跌。", topHoldings: "統一、台灣大、遠傳" },
+    "00878":  { name: "00878 國泰永續高股息", symbol: "00878.TW", region: "台股", isDiv: true, freq: "季配", price: 22.5, expReturn: 6.5, divYield: 6.8, desc: "ESG 永續加上高殖利率篩選人氣王。", topHoldings: "廣達、聯發科、聯詠" },
+    "00881":  { name: "00881 國泰台灣5G+", symbol: "00881.TW", region: "台股", isDiv: true, freq: "半年配", price: 26.5, expReturn: 8.5, divYield: 4.5, desc: "聚焦台股 5G、AI 與半導體關鍵技術。", topHoldings: "台積電、鴻海、聯發科" },
+    "00919":  { name: "00919 群益台灣精選高息", symbol: "00919.TW", region: "台股", isDiv: true, freq: "季配", price: 24.1, expReturn: 7.5, divYield: 9.5, desc: "宣告股息後精準卡位高息股。", topHoldings: "聯電、長榮、聯詠" },
+    "00929":  { name: "00929 復華台灣科技優息", symbol: "00929.TW", region: "台股", isDiv: true, freq: "月配", price: 19.3, expReturn: 7.0, divYield: 7.5, desc: "純科技股題材高股息，月月配息。", topHoldings: "聯發科、日月光投控" },
+    "009816": { name: "009816 凱基台灣TOP50", symbol: "009816.TW", region: "台股", isDiv: false, freq: "不配息", price: 16.5, expReturn: 8.5, divYield: 0, desc: "不配息大盤 ETF，全數累積自動複利。", topHoldings: "台積電、聯發科、鴻海" },
+    "00981A": { name: "00981A 主動統一台股增長", symbol: "00981A.TW", region: "台股主動", isDiv: true, freq: "季配", price: 31.4, expReturn: 9.0, divYield: 8.2, desc: "主動式操盤選股 ETF。", topHoldings: "台積電、奇鋐、世芯-KY" },
+    "00403A": { name: "00403A 主動華南台股優選", symbol: "00403A.TW", region: "台股主動", isDiv: true, freq: "季配", price: 15.2, expReturn: 8.5, divYield: 6.5, desc: "主動式台股優選 ETF。", topHoldings: "台積電、聯發科、鴻海" },
+    "00410A": { name: "00410A 主動第一台股成長", symbol: "00410A.TW", region: "台股主動", isDiv: true, freq: "季配", price: 15.0, expReturn: 8.8, divYield: 6.0, desc: "主動操盤中小型高成長龍頭。", topHoldings: "世芯-KY、緯穎、川湖" },
+
+    // === 美股標的 (USD) ===
+    "DIA":    { name: "DIA 追蹤道瓊工業指數", symbol: "DIA", region: "美股", isDiv: true, freq: "月配", price: 420.0, expReturn: 8.0, divYield: 1.8, desc: "美國 30 檔最頂尖藍籌企業。", topHoldings: "聯合健康、高盛、微軟" },
+    "QQQ":    { name: "QQQ 納斯達克100科技", symbol: "QQQ", region: "美股", isDiv: true, freq: "季配", price: 480.0, expReturn: 12.0, divYield: 0.6, desc: "美國納斯達克 100 大非金融科技巨頭。", topHoldings: "微軟、蘋果、輝達、亞馬遜" },
+    "SMH":    { name: "SMH 范克半導體 ETF", symbol: "SMH", region: "美股", isDiv: true, freq: "年配", price: 250.0, expReturn: 15.0, divYield: 0.5, desc: "市值加權半導體 ETF（重倉輝達/台積電ADR）。", topHoldings: "輝達 (20%+)、台積電ADR" },
+    "SOXX":   { name: "SOXX 費城半導體 ETF", symbol: "SOXX", region: "美股", isDiv: true, freq: "季配", price: 230.0, expReturn: 14.5, divYield: 0.8, desc: "追蹤費城半導體指數。", topHoldings: "AMD、博通、高通、輝達" },
+    "VGT":    { name: "VGT Vanguard 資訊科技", symbol: "VGT", region: "美股", isDiv: true, freq: "季配", price: 560.0, expReturn: 13.0, divYield: 0.7, desc: "先鋒極低費用純科技 ETF。", topHoldings: "蘋果、微軟、輝達" },
+    "VNQ":    { name: "VNQ Vanguard 房產信託", symbol: "VNQ", region: "美股", isDiv: true, freq: "季配", price: 88.0, expReturn: 6.0, divYield: 4.2, desc: "美國商業大樓與數據中心 REITs。", topHoldings: "ProLogis、American Tower" },
+    "VOO":    { name: "VOO Vanguard S&P 500", symbol: "VOO", region: "美股", isDiv: true, freq: "季配", price: 510.0, expReturn: 10.0, divYield: 1.4, desc: "巴菲特最推美國 500 大企業。", topHoldings: "微軟、蘋果、輝達、亞馬遜" },
+    "VOOG":   { name: "VOOG S&P 500 成長型", symbol: "VOOG", region: "美股", isDiv: true, freq: "季配", price: 330.0, expReturn: 11.5, divYield: 0.8, desc: "S&P 500 強勁成長動能股。", topHoldings: "輝達、微軟、蘋果" },
+    "VT":     { name: "VT Vanguard 全球股市", symbol: "VT", region: "美股", isDiv: true, freq: "季配", price: 112.0, expReturn: 7.5, divYield: 2.1, desc: "一檔買下全世界 9000+ 企業。", topHoldings: "微軟、蘋果、台積電" },
+    "VTI":    { name: "VTI Vanguard 全美股市", symbol: "VTI", region: "美股", isDiv: true, freq: "季配", price: 270.0, expReturn: 9.8, divYield: 1.4, desc: "全美國大中小型近 4000 家企業。", topHoldings: "微軟、蘋果、輝達" },
+    "XLK":    { name: "XLK 科技類股 SPDR", symbol: "XLK", region: "美股", isDiv: true, freq: "季配", price: 220.0, expReturn: 13.5, divYield: 0.7, desc: "美股標普科技板塊代表性 ETF。", topHoldings: "微軟、蘋果、輝達" }
+  };
+
+  const presets = {
+    tw_us_global: [
+      { code: "0050", ratio: 100 },
+      { code: "VOO", ratio: 100 }
+    ],
+    tech_power: [
+      { code: "0052", ratio: 100 },
+      { code: "QQQ", ratio: 50 },
+      { code: "SOXX", ratio: 50 }
+    ],
+    leverage_div: [
+      { code: "00631L", ratio: 30 },
+      { code: "00878", ratio: 70 }
+    ]
+  };
+
+  let rows = [];
+
+  function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    
+    document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+    document.getElementById(`tab-${tabName}`).classList.add('active');
+
+    if (tabName === 'wiki') {
+      renderWikiCards();
+    }
+  }
+
+  function sortRows() {
+    rows.sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true, sensitivity: 'base' }));
+  }
+
+  async function fetchSinglePrice(code) {
+    const symbol = db[code]?.symbol;
+    if (!symbol) return;
+
+    try {
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d`;
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+      const response = await fetch(proxyUrl);
+      const data = await response.json();
+      const resultObj = JSON.parse(data.contents);
+      const latestPrice = resultObj.chart.result[0].meta.regularMarketPrice;
+
+      if (latestPrice && !isNaN(latestPrice)) {
+        db[code].price = parseFloat(latestPrice.toFixed(2));
+      }
+    } catch (e) {
+      console.log(`連線更新 ${code} 失敗，使用預設值。`, e);
+    }
+  }
+
+  async function fetchAllPrices() {
+    const uniqueCodes = [...new Set(rows.map(r => r.code))];
+    await Promise.all(uniqueCodes.map(code => fetchSinglePrice(code)));
+    renderRows();
+    calculate();
+  }
+
+  function loadPreset(type) {
+    rows = JSON.parse(JSON.stringify(presets[type]));
+    sortRows();
+    renderRows();
+    calculate();
+  }
+
+  function renderRows() {
+    const container = document.getElementById('etfCardsContainer');
+    container.innerHTML = '';
+
+    const sortedDbKeys = Object.keys(db).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+
+    rows.forEach((row, index) => {
+      const card = document.createElement('div');
+      card.className = 'etf-card-item';
+
+      // 修正：選單標示簡化為 [台股] 或 [美股]
+      let options = sortedDbKeys.map(key => {
+        const isUs = db[key].region.includes('美股');
+        const tagStr = isUs ? '[美股]' : '[台股]';
+        return `<option value="${key}" ${key === row.code ? 'selected' : ''}>${tagStr} ${db[key].name}</option>`;
+      }).join('');
+
+      const isUs = db[row.code].region.includes('美股');
+
+      card.innerHTML = `
+        <div class="etf-card-header">
+          <span class="etf-card-title">📌 標的 #${index + 1}：${db[row.code].name}</span>
+          <button class="btn-danger" onclick="removeRow(${index})">刪除</button>
+        </div>
+
+        <div class="form-group">
+          <label>選擇 ETF 標的：</label>
+          <select onchange="updateRow(${index}, 'code', this.value)">
+            ${options}
+          </select>
+        </div>
+
+        <div style="display:flex; gap:12px;">
+          <div class="form-group" style="flex:1;">
+            <label>預估/即時股價 (${isUs ? '美金 $' : '台幣 $'})：</label>
+            <input type="number" step="0.1" value="${db[row.code].price}" oninput="updatePrice('${row.code}', this.value)">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>預估年化報酬率 (%)：</label>
+            <input type="number" step="0.1" value="${db[row.code].expReturn}" oninput="updateExpReturn('${row.code}', this.value)">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
+          <label>分配比例 (%) [佔${isUs ? '美股' : '台股'}預算]：</label>
+          <div class="ratio-control-box">
+            <input type="number" id="numInput_${index}" value="${row.ratio}" min="0" max="100" style="width: 90px;" oninput="syncRatio(${index}, this.value, 'num')">
+            <span style="font-weight:bold;">%</span>
+            <input type="range" id="rangeInput_${index}" value="${row.ratio}" min="0" max="100" style="flex: 1;" oninput="syncRatio(${index}, this.value, 'range')">
+          </div>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  function renderWikiCards() {
+    const container = document.getElementById('wikiCardsContainer');
+    container.innerHTML = '';
+
+    const sortedDbKeys = Object.keys(db).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+
+    sortedDbKeys.forEach(key => {
+      const item = db[key];
+      const regionTag = item.region.includes('美股') ? 'tag-us' : (item.isDiv ? 'tag-div' : 'tag-no-div');
+
+      const card = document.createElement('div');
+      card.className = 'info-card';
+      card.innerHTML = `
+        <h4>
+          <span>${item.name}</span>
+          <span class="${regionTag}">${item.region}</span>
+        </h4>
+        <p><strong>參考股價：</strong>${item.region.includes('美股') ? 'US$' : 'NT$'}${item.price} | <strong>預估年化報酬：</strong><span class="info-highlight">${item.expReturn}%</span></p>
+        <p><strong>配息機制：</strong>${item.freq}</p>
+        <p><strong>核心說明：</strong>${item.desc}</p>
+        <p><strong>主要成分股：</strong>${item.topHoldings}</p>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  function syncRatio(index, val, source) {
+    const parsedVal = Math.min(100, Math.max(0, parseFloat(val) || 0));
+    rows[index].ratio = parsedVal;
+
+    if (source === 'num') {
+      document.getElementById(`rangeInput_${index}`).value = parsedVal;
+    } else if (source === 'range') {
+      document.getElementById(`numInput_${index}`).value = parsedVal;
+    }
+
+    calculate();
+  }
+
+  function addEtfRow() {
+    rows.push({ code: "VOO", ratio: 0 });
+    sortRows();
+    renderRows();
+    calculate();
+  }
+
+  function removeRow(index) {
+    rows.splice(index, 1);
+    renderRows();
+    calculate();
+  }
+
+  function updateRow(index, field, value) {
+    if (field === 'code') rows[index].code = value;
+    sortRows();
+    renderRows();
+    calculate();
+  }
+
+  function updatePrice(code, newPrice) {
+    if (db[code]) {
+      db[code].price = parseFloat(newPrice) || 0;
+      calculate();
+    }
+  }
+
+  function updateExpReturn(code, newReturn) {
+    if (db[code]) {
+      db[code].expReturn = parseFloat(newReturn) || 0;
+      calculate();
+    }
+  }
+
+  function calculate() {
+    const monthlyTotalTW = parseFloat(document.getElementById('monthlyTotalTW').value) || 0;
+    const monthlyTotalUS = parseFloat(document.getElementById('monthlyTotalUS').value) || 0;
+    const rate = parseFloat(document.getElementById('usExchangeRate').value) || 32.0;
+    const years = parseFloat(document.getElementById('years').value) || 0;
+    const months = years * 12;
+
+    document.getElementById('showYears1').innerText = years;
+    document.getElementById('showExchangeRate').innerText = `1 : ${rate.toFixed(1)}`;
+
+    const tbody = document.getElementById('resultBody');
+    tbody.innerHTML = '';
+
+    let twPrincipal = 0, twAsset = 0, twDiv = 0;
+    let usPrincipal = 0, usAsset = 0, usDiv = 0;
+
+    rows.forEach(r => {
+      const info = db[r.code] || { price: 10, isDiv: true, region: "台股", expReturn: 6.0, divYield: 5.0 };
+      const isUs = info.region.includes('美股');
+      
+      const allocatedMonthly = (isUs ? monthlyTotalUS : monthlyTotalTW) * (r.ratio / 100);
+      const totalPartPrincipal = allocatedMonthly * months;
+
+      const shares = info.price > 0 ? Math.floor(allocatedMonthly / info.price) : 0;
+      const sheets = (shares / 1000).toFixed(2);
+
+      const rMonthly = (info.expReturn / 100) / 12;
+      let partAsset = 0;
+      if (rMonthly > 0) {
+        partAsset = allocatedMonthly * ((Math.pow(1 + rMonthly, months) - 1) / rMonthly);
+      } else {
+        partAsset = totalPartPrincipal;
+      }
+
+      let partDiv = 0;
+      if (info.isDiv) {
+        partDiv = partAsset * (info.divYield / 100);
+      }
+
+      if (isUs) {
+        usPrincipal += totalPartPrincipal;
+        usAsset += partAsset;
+        usDiv += partDiv;
+      } else {
+        twPrincipal += totalPartPrincipal;
+        twAsset += partAsset;
+        twDiv += partDiv;
+      }
+
+      const regionTag = isUs ? 'tag-us' : (info.isDiv ? 'tag-div' : 'tag-no-div');
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${info.name}</strong></td>
+        <td><span class="${regionTag}">${info.region}</span></td>
+        <td>${r.ratio}%</td>
+        <td>${isUs ? 'US$' : 'NT$'} ${Math.round(allocatedMonthly).toLocaleString()}</td>
+        <td><strong>${info.expReturn}%</strong></td>
+        <td>${isUs ? 'US$' : 'NT$'} ${info.price}</td>
+        <td><strong>${isUs ? shares + ' 股' : sheets + ' 張 (' + shares + ' 股)'}</strong></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // 更新 UI
+    document.getElementById('twMonthly').innerText = 'NT$ ' + Math.round(monthlyTotalTW).toLocaleString();
+    document.getElementById('twPrincipal').innerText = 'NT$ ' + Math.round(twPrincipal).toLocaleString();
+    document.getElementById('twAsset').innerText = 'NT$ ' + Math.round(twAsset).toLocaleString();
+    document.getElementById('twDividend').innerText = 'NT$ ' + Math.round(twDiv).toLocaleString();
+
+    document.getElementById('usMonthly').innerText = 'US$ ' + Math.round(monthlyTotalUS).toLocaleString();
+    document.getElementById('usPrincipal').innerText = 'US$ ' + Math.round(usPrincipal).toLocaleString();
+    document.getElementById('usAsset').innerText = 'US$ ' + Math.round(usAsset).toLocaleString();
+    document.getElementById('usDividend').innerText = 'US$ ' + Math.round(usDiv).toLocaleString();
+
+    const totalMonthlyTwd = monthlyTotalTW + (monthlyTotalUS * rate);
+    const totalAssetTwd = twAsset + (usAsset * rate);
+    const totalDivTwd = twDiv + (usDiv * rate);
+
+    document.getElementById('totalMonthlyTwd').innerText = 'NT$ ' + Math.round(totalMonthlyTwd).toLocaleString();
+    document.getElementById('totalAssetTwd').innerText = 'NT$ ' + Math.round(totalAssetTwd).toLocaleString();
+    document.getElementById('totalDividendTwd').innerText = 'NT$ ' + Math.round(totalDivTwd).toLocaleString();
+  }
+
+  // 初始載入
+  loadPreset('tw_us_global');
+</script>
+
+</body>
+</html>
